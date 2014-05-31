@@ -1,4 +1,4 @@
-package com.bradchen.jwormhole;
+package com.bradchen.jwormhole.server;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntityEnclosingRequest;
@@ -43,18 +43,13 @@ public class ProxyRequestHandler {
 		ASCII_QUERY_CHARS.set((int) '%'); //leave existing percent escapes in place
 	}
 
-	private final boolean doForwardIP;
-
-	// User agents shouldn’t send the url fragment but what if it does?
-	private final boolean doSendUrlFragment;
+	private final Settings settings;
 	private final HostManager hostManager;
 	private final CloseableHttpClient proxyClient;
 
-	public ProxyRequestHandler(HostManager hostMapper, boolean doForwardIP,
-							   boolean doSendUrlFragment) {
-		this.hostManager = hostMapper;
-		this.doForwardIP = doForwardIP;
-		this.doSendUrlFragment = doSendUrlFragment;
+	public ProxyRequestHandler(Settings settings, HostManager hostManager) {
+		this.hostManager = hostManager;
+		this.settings = settings;
 		this.proxyClient = HttpClients.createDefault();
 	}
 
@@ -124,7 +119,7 @@ public class ProxyRequestHandler {
 			int fragIdx = queryString.indexOf('#');
 			String queryNoFrag = (fragIdx < 0 ? queryString : queryString.substring(0,fragIdx));
 			uri.append(encodeUriQuery(queryNoFrag));
-			if (doSendUrlFragment && fragIdx >= 0) {
+			if (settings.isUrlFragmentSent() && fragIdx >= 0) {
 				uri.append('#');
 				uri.append(encodeUriQuery(queryString.substring(fragIdx + 1)));
 			}
@@ -134,7 +129,7 @@ public class ProxyRequestHandler {
 
 	private void setXForwardedForHeader(HttpServletRequest servletRequest,
 										HttpRequest proxyRequest) {
-		if (!doForwardIP) {
+		if (!settings.isIpForwarded()) {
 			return;
 		}
 

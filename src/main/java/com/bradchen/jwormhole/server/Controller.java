@@ -1,4 +1,4 @@
-package com.bradchen.jwormhole;
+package com.bradchen.jwormhole.server;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,19 +13,18 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 
-public class ControlConsole {
+public class Controller {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ControlConsole.class);
-	private static final int CONTROL_CONSOLE_PORT = 12700;
+	private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
 
 	private final HostManager hostManager;
 	private final ServerSocket serverSocket;
 	private boolean running;
 
-	public ControlConsole(HostManager hostManager) throws IOException {
+	public Controller(Settings settings, HostManager hostManager) throws IOException {
 		this.hostManager = hostManager;
 		running = true;
-		serverSocket = new ServerSocket(CONTROL_CONSOLE_PORT);
+		serverSocket = new ServerSocket(settings.getControllerPort());
 	}
 
 	public void run() {

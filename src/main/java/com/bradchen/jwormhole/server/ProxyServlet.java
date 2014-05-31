@@ -1,4 +1,4 @@
-package com.bradchen.jwormhole;
+package com.bradchen.jwormhole.server;
 
 /**
  * This class was modified from https://github.com/mitre/HTTP-Proxy-Servlet. Below is the original
@@ -35,8 +35,12 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Properties;
 
 /**
  * An HTTP reverse proxy/gateway servlet. It is designed to be extended for customization
@@ -56,8 +60,11 @@ import java.io.OutputStream;
 @SuppressWarnings("serial")
 public final class ProxyServlet extends GenericServlet {
 
-	// A boolean parameter name to enable forwarding of the client IP
-	private static final String P_FORWARDED_FOR = "forwardip";
+	// in class path
+	private static final String DEFAULT_SETTINGS_FILE = "settings.default.properties";
+
+	// relative to $HOME
+	private static final String OVERRIDE_SETTINGS_FILE = ".jwormhole/server.properties";
 
 	/**
 	 * These are the "hop-by-hop" headers that should not be copied.
@@ -79,32 +86,58 @@ public final class ProxyServlet extends GenericServlet {
 
 	private HostManager hostManager;
 	private ProxyRequestHandler proxyRequestHandler;
-	private ControlConsole controlConsole;
+	private Controller controller;
 
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
 		try {
-			hostManager = new HostManager();
-			boolean doForwardIP = getBooleanServletConfig(servletConfig, P_FORWARDED_FOR, false);
-			proxyRequestHandler = new ProxyRequestHandler(hostManager, doForwardIP, true);
-			controlConsole = new ControlConsole(hostManager);
-			controlConsole.run();
+			Settings settings = new Settings(readDefaultSettings(), readOverrideSettings());
+			hostManager = new HostManager(settings);
+			proxyRequestHandler = new ProxyRequestHandler(settings, hostManager);
+			controller = new Controller(settings, hostManager);
+			controller.run();
 		} catch (IOException exception) {
 			throw new ServletException(exception);
 		}
 	}
 
-	private static boolean getBooleanServletConfig(ServletConfig servletConfig, String name,
-												   boolean defaultValue) {
-		String param = servletConfig.getInitParameter(name);
-		return (param == null) ? defaultValue : Boolean.parseBoolean(param);
+	private static Properties readDefaultSettings() throws IOException {
+		ClassLoader tcl = Thread.currentThread().getContextClassLoader();
+		InputStream inputStream = null;
+		try {
+			inputStream = tcl.getResourceAsStream(DEFAULT_SETTINGS_FILE);
+			return readPropertiesFile(inputStream);
+		} finally {
+			IOUtils.closeQuietly(inputStream);
+		}
+	}
+
+	private static Properties readOverrideSettings() throws IOException {
+		File file = new File(System.getenv("HOME") + "/" + OVERRIDE_SETTINGS_FILE);
+		if (!file.exists()) {
+			return null;
+		}
+
+		InputStream inputStream = null;
+		try {
+			inputStream = new FileInputStream(file);
+			return readPropertiesFile(inputStream);
+		} finally {
+			IOUtils.closeQuietly(inputStream);
+		}
+	}
+
+	private static Properties readPropertiesFile(InputStream inputStream) throws IOException {
+		Properties properties = new Properties();
+		properties.load(inputStream);
+		return properties;
 	}
 
 	@Override
 	public void destroy() {
 		proxyRequestHandler.shutdown();
 		hostManager.shutdown();
-		controlConsole.shutdown();
+		controller.shutdown();
 	}
 
 	@Override

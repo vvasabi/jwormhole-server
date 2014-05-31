@@ -1,4 +1,4 @@
-package com.bradchen.jwormhole;
+package com.bradchen.jwormhole.server;
 
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -14,21 +14,20 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class HostManager {
 
-	private static final int NUM_KEY_CHARACTERS = 5;
-	public static final int PORT_RANGE_START = 20000;
-	public static final int PORT_RANGE_END = 30000;
-
+	private final Settings settings;
 	private final ScheduledExecutorService scheduler;
 	private final ReadWriteLock readWriteLock;
 	private final Set<Integer> ports;
 	private final Map<String, Host> hosts;
 
-	public HostManager() {
+	public HostManager(Settings settings) {
+		this.settings = settings;
 		readWriteLock = new ReentrantReadWriteLock();
 		ports = new HashSet<>();
 		hosts = new ConcurrentHashMap<>();
 		scheduler = Executors.newScheduledThreadPool(1);
-		scheduler.scheduleAtFixedRate(this::removeExpiredHosts, 1, 1, TimeUnit.MINUTES);
+		scheduler.scheduleAtFixedRate(this::removeExpiredHosts, settings.getHostManagerGcPeriod(),
+			settings.getHostManagerGcPeriod(), TimeUnit.SECONDS);
 	}
 
 	public Host getHost(String key) {
@@ -45,14 +44,16 @@ public class HostManager {
 		try {
 			String key;
 			do {
-				key = RandomStringUtils.randomAlphanumeric(NUM_KEY_CHARACTERS).toLowerCase();
+				key = RandomStringUtils.randomAlphanumeric(settings.getHostKeyLength())
+					.toLowerCase();
 			} while (hosts.containsKey(key));
 			int port;
 			do {
-				port = (int)(Math.random() * (PORT_RANGE_END - PORT_RANGE_START)
-					+ PORT_RANGE_START);
+				port = (int)(Math.random() * (settings.getHostPortRangeEnd() -
+						settings.getHostPortRangeStart()) + settings.getHostPortRangeStart());
 			} while (ports.contains(port));
-			Host host = new Host(key, port);
+			Host host = new Host(key, port, TimeUnit.MILLISECONDS.convert(settings.getHostTimeout(),
+				TimeUnit.SECONDS));
 			ports.add(port);
 			hosts.put(key, host);
 			return host;

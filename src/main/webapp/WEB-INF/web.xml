@@ -9,7 +9,7 @@
 	<!-- jWormhole Server -->
 	<servlet>
 		<servlet-name>proxy-serlvet</servlet-name>
-		<servlet-class>com.bradchen.jwormhole.ProxyServlet</servlet-class>
+		<servlet-class>com.bradchen.jwormhole.server.ProxyServlet</servlet-class>
     <load-on-startup>1</load-on-startup>
 	</servlet>
 

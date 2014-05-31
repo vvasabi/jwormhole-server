@@ -1,22 +1,23 @@
-package com.bradchen.jwormhole;
+package com.bradchen.jwormhole.server;
 
 import java.io.Serializable;
 
 public final class Host implements Serializable {
 
 	private static final long serialVersionUID = 3771827707514422212L;
-	private static final long TIMEOUT = 60000; // 60 seconds
 
 	private final String key;
 	private final int port;
 	private final long createTime;
+	private final long timeout;
 	private long expiry;
 
-	public Host(String key, int port) {
+	public Host(String key, int port, long timeout) {
 		this.key = key;
 		this.port = port;
-		createTime = System.currentTimeMillis();
-		expiry = createTime + TIMEOUT;
+		this.createTime = System.currentTimeMillis();
+		this.timeout = timeout;
+		expiry = createTime + timeout;
 	}
 
 	public String getKey() {
@@ -40,7 +41,7 @@ public final class Host implements Serializable {
 		if (now > expiry) {
 			return false;
 		}
-		expiry = now + TIMEOUT;
+		expiry = now + timeout;
 		return true;
 	}
 
