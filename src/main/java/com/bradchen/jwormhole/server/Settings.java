@@ -9,8 +9,8 @@ public final class Settings {
 	private static final Pattern PATTERN = Pattern.compile("^[-_.a-z0-9]*$",
 		Pattern.CASE_INSENSITIVE);
 
-	private final String urlPrefix;
-	private final String urlSuffix;
+	private final String domainNamePrefix;
+	private final String domainNameSuffix;
 	private final int controllerPort;
 	private final int hostPortRangeStart;
 	private final int hostPortRangeEnd;
@@ -21,8 +21,8 @@ public final class Settings {
 	private final boolean urlFragmentSent;
 
 	public Settings(Properties defaults, Properties overrides) {
-		urlPrefix = getSetting(defaults, overrides, "urlPrefix");
-		urlSuffix = getSetting(defaults, overrides, "urlSuffix");
+		domainNamePrefix = getSetting(defaults, overrides, "domainNamePrefix");
+		domainNameSuffix = getSetting(defaults, overrides, "domainNameSuffix");
 		controllerPort = getSettingInteger(defaults, overrides, "controllerPort");
 		hostPortRangeStart = getSettingInteger(defaults, overrides, "hostPortRangeStart");
 		hostPortRangeEnd = getSettingInteger(defaults, overrides, "hostPortRangeEnd");
@@ -35,7 +35,7 @@ public final class Settings {
 	}
 
 	private void validateSettings() {
-		if (!PATTERN.matcher(urlPrefix).matches()) {
+		if (!PATTERN.matcher(domainNamePrefix).matches()) {
 			throw new RuntimeException("Invalid url prefix.");
 		}
 		if ((controllerPort <= 0) ||
@@ -75,12 +75,12 @@ public final class Settings {
 		return (String)defaults.get(fullKey);
 	}
 
-	public String getUrlPrefix() {
-		return urlPrefix;
+	public String getDomainNamePrefix() {
+		return domainNamePrefix;
 	}
 
-	public String getUrlSuffix() {
-		return urlSuffix;
+	public String getDomainNameSuffix() {
+		return domainNameSuffix;
 	}
 
 	public int getControllerPort() {

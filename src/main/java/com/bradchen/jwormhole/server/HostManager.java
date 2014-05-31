@@ -30,13 +30,31 @@ public class HostManager {
 			settings.getHostManagerGcPeriod(), TimeUnit.SECONDS);
 	}
 
-	public Host getHost(String key) {
+	public Host getHost(String domainName) {
+		if (domainName == null) {
+			return null;
+		}
+
 		readWriteLock.readLock().lock();
 		try {
+			String key = getKeyFromDomainName(domainName.toLowerCase());
+			if (key == null) {
+				return null;
+			}
 			return hosts.get(key);
 		} finally {
 			readWriteLock.readLock().unlock();
 		}
+	}
+
+	public String getKeyFromDomainName(String domainName) {
+		int prefixLength = settings.getDomainNamePrefix().length();
+		int suffixLength = settings.getDomainNameSuffix().length();
+		int domainNameLength = domainName.length();
+		if (domainNameLength <= (prefixLength + suffixLength)) {
+			return null;
+		}
+		return domainName.substring(prefixLength, domainNameLength - prefixLength - suffixLength);
 	}
 
 	public Host createHost() {
@@ -50,7 +68,7 @@ public class HostManager {
 			int port;
 			do {
 				port = (int)(Math.random() * (settings.getHostPortRangeEnd() -
-						settings.getHostPortRangeStart()) + settings.getHostPortRangeStart());
+					settings.getHostPortRangeStart()) + settings.getHostPortRangeStart());
 			} while (ports.contains(port));
 			Host host = new Host(key, port, TimeUnit.MILLISECONDS.convert(settings.getHostTimeout(),
 				TimeUnit.SECONDS));

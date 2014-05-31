@@ -54,11 +54,7 @@ public class ProxyRequestHandler {
 	}
 
 	public String getTargetUri(HttpServletRequest servletRequest) {
-		String hostName = servletRequest.getHeader(HttpHeaders.HOST);
-		if (hostName == null) {
-			return null;
-		}
-		Host host = hostManager.getHost(hostName.split("\\.")[0].toLowerCase());
+		Host host = hostManager.getHost(servletRequest.getHeader(HttpHeaders.HOST));
 		return (host == null) ? null : "http://localhost:" + host.getPort() + "/";
 	}
 

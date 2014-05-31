@@ -17,11 +17,13 @@ public class Controller {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
 
+	private final Settings settings;
 	private final HostManager hostManager;
 	private final ServerSocket serverSocket;
 	private boolean running;
 
 	public Controller(Settings settings, HostManager hostManager) throws IOException {
+		this.settings = settings;
 		this.hostManager = hostManager;
 		running = true;
 		serverSocket = new ServerSocket(settings.getControllerPort());
@@ -59,7 +61,8 @@ public class Controller {
 
 		if ("createHost".equals(command)) {
 			Host host = hostManager.createHost();
-			return String.format("%s,%d", host.getKey(), host.getPort());
+			return String.format("%s%s%s,%d", settings.getDomainNamePrefix(), host.getKey(),
+				settings.getDomainNameSuffix(), host.getPort());
 		}
 
 		String[] tokens = command.split(" ");
