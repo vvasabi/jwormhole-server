@@ -25,6 +25,7 @@ import java.util.Formatter;
 public class ProxyRequestHandler {
 
 	private static final String X_FORWARDED_FOR_HEADER = "X-Forwarded-For";
+	private static final String X_FORWARDED_HEADER = "X-Forwarded-";
 	private static final BitSet ASCII_QUERY_CHARS;
 
 	static {
@@ -150,10 +151,18 @@ public class ProxyRequestHandler {
 		while (enumerationOfHeaderNames.hasMoreElements()) {
 			String headerName = enumerationOfHeaderNames.nextElement();
 			//Instead the content-length is effectively set via InputStreamEntity
-			if (headerName.equalsIgnoreCase(HttpHeaders.CONTENT_LENGTH))
+			if (headerName.equalsIgnoreCase(HttpHeaders.CONTENT_LENGTH)) {
 				continue;
-			if (ProxyServlet.HOP_BY_HOP_HEADERS.containsHeader(headerName))
+			}
+
+			if (ProxyServlet.HOP_BY_HOP_HEADERS.containsHeader(headerName)) {
 				continue;
+			}
+
+			// ignore X-Forwarded-* headers set by reverse proxy
+			if (headerName.startsWith(X_FORWARDED_HEADER)) {
+				continue;
+			}
 
 			Enumeration<String> headers = servletRequest.getHeaders(headerName);
 			while (headers.hasMoreElements()) {//sometimes more than one value
