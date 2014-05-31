@@ -145,17 +145,25 @@ public final class ProxyServlet extends GenericServlet {
 			throws ServletException, IOException {
 		HttpServletRequest servletRequest = (HttpServletRequest)req;
 		HttpServletResponse servletResponse = (HttpServletResponse)res;
+
 		HttpResponse proxyResponse = null;
-		String targetUri;
 		try {
-			proxyResponse = proxyRequestHandler.handle(servletRequest);
-			targetUri = proxyRequestHandler.getTargetUri(servletRequest);
+			// get response from proxied host
+			try {
+				proxyResponse = proxyRequestHandler.handle(servletRequest);
+			} catch (IOException exception) {
+				servletResponse.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+				return;
+			}
+
+			// no host can be found
 			if (proxyResponse == null) {
 				servletResponse.sendError(HttpServletResponse.SC_NOT_FOUND);
 				return;
 			}
 
-			// Process the response
+			// send response back to client
+			String targetUri = proxyRequestHandler.getTargetUri(servletRequest);
 			int statusCode = proxyResponse.getStatusLine().getStatusCode();
 			if (doResponseRedirectOrNotModifiedLogic(servletRequest, servletResponse, proxyResponse,
 					statusCode, targetUri)) {

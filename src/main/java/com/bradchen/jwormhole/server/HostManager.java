@@ -14,6 +14,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class HostManager {
 
+	private static final String PORT_PATTERN = "(:[\\d]+)?$";
+
 	private final Settings settings;
 	private final ScheduledExecutorService scheduler;
 	private final ReadWriteLock readWriteLock;
@@ -37,7 +39,8 @@ public class HostManager {
 
 		readWriteLock.readLock().lock();
 		try {
-			String key = getKeyFromDomainName(domainName.toLowerCase());
+			String portRemoved = domainName.replaceAll(PORT_PATTERN, "");
+			String key = getKeyFromDomainName(portRemoved.toLowerCase());
 			if (key == null) {
 				return null;
 			}

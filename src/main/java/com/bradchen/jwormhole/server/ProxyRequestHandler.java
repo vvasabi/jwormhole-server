@@ -63,7 +63,12 @@ public class ProxyRequestHandler {
 		try {
 			// Make the Request
 			//note: we won't transfer the protocol version because I'm not sure it would truly be compatible
-			URI targetUri = new URI(getTargetUri(servletRequest));
+			String targetUriString = getTargetUri(servletRequest);
+			if (targetUriString == null) {
+				return null;
+			}
+
+			URI targetUri = new URI(targetUriString);
 			String method = servletRequest.getMethod();
 			String proxyRequestUri = rewriteUrlFromRequest(targetUri, servletRequest);
 
