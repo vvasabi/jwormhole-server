@@ -2,6 +2,7 @@ package com.bradchen.jwormhole.server;
 
 import org.apache.commons.lang3.RandomStringUtils;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +31,15 @@ public class HostManager {
 		scheduler = Executors.newScheduledThreadPool(1);
 		scheduler.scheduleAtFixedRate(this::removeExpiredHosts, settings.getHostManagerGcPeriod(),
 			settings.getHostManagerGcPeriod(), TimeUnit.SECONDS);
+	}
+
+	public Map<String, Host> getHosts() {
+		readWriteLock.readLock().lock();
+		try {
+			return Collections.unmodifiableMap(hosts);
+		} finally {
+			readWriteLock.readLock().unlock();
+		}
 	}
 
 	public Host getHost(String domainName) {
@@ -78,6 +88,15 @@ public class HostManager {
 			ports.add(port);
 			hosts.put(key, host);
 			return host;
+		} finally {
+			readWriteLock.writeLock().unlock();
+		}
+	}
+
+	public void removeHost(Host host) {
+		readWriteLock.writeLock().lock();
+		try {
+			hosts.remove(host.getKey());
 		} finally {
 			readWriteLock.writeLock().unlock();
 		}

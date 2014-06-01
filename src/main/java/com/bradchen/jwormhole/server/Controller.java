@@ -12,10 +12,15 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Map;
 
 public class Controller {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
+	private static final DateFormat FULL_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private final Settings settings;
 	private final HostManager hostManager;
@@ -61,8 +66,24 @@ public class Controller {
 
 		if ("createHost".equals(command)) {
 			Host host = hostManager.createHost();
-			return String.format("%s%s%s,%d", settings.getDomainNamePrefix(), host.getKey(),
-				settings.getDomainNameSuffix(), host.getPort());
+			return String.format("%s,%d", getHostDomainName(host), host.getPort());
+		}
+
+		if ("listHosts".equals(command)) {
+			StringBuilder sb = new StringBuilder();
+			Map<String, Host> hosts = hostManager.getHosts();
+			for (Map.Entry<String, Host> entry : hosts.entrySet()) {
+				Host host = entry.getValue();
+				sb.append(getHostDomainName(host));
+				sb.append(" ");
+				sb.append(host.getPort());
+				sb.append(" ");
+				sb.append(FULL_DATE_FORMAT.format(new Date(host.getCreateTime())));
+				sb.append("\n");
+			}
+			sb.append("# hosts: ");
+			sb.append(hosts.size());
+			return sb.toString();
 		}
 
 		String[] tokens = command.split(" ");
@@ -75,7 +96,22 @@ public class Controller {
 			host.renew();
 			return null;
 		}
+
+		if ("removeHost".equals(tokens[0]) && (tokens.length == 2)) {
+			Host host = hostManager.getHost(tokens[1]);
+			if (host == null) {
+				return "Invalid host: " + tokens[1];
+			}
+
+			hostManager.removeHost(host);
+			return null;
+		}
 		return invalidCommandResponse(command);
+	}
+
+	private String getHostDomainName(Host host) {
+		return String.format("%s%s%s", settings.getDomainNamePrefix(), host.getKey(),
+			settings.getDomainNameSuffix());
 	}
 
 	private String invalidCommandResponse(String command) {
