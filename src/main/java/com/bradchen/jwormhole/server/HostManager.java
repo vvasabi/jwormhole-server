@@ -78,19 +78,35 @@ public class HostManager {
 				key = RandomStringUtils.randomAlphanumeric(settings.getHostKeyLength())
 					.toLowerCase();
 			} while (hosts.containsKey(key));
-			int port;
-			do {
-				port = (int)(Math.random() * (settings.getHostPortRangeEnd() -
-					settings.getHostPortRangeStart()) + settings.getHostPortRangeStart());
-			} while (ports.contains(port));
-			Host host = new Host(key, port, TimeUnit.MILLISECONDS.convert(settings.getHostTimeout(),
-				TimeUnit.SECONDS));
-			ports.add(port);
-			hosts.put(key, host);
-			return host;
+			return createHostAndAssignPort(key);
 		} finally {
 			readWriteLock.writeLock().unlock();
 		}
+	}
+
+	public Host createHost(String key) {
+		readWriteLock.writeLock().lock();
+		try {
+			if (hosts.containsKey(key)) {
+				return null;
+			}
+			return createHostAndAssignPort(key);
+		} finally {
+			readWriteLock.writeLock().unlock();
+		}
+	}
+
+	private Host createHostAndAssignPort(String key) {
+		int port;
+		do {
+			port = (int)(Math.random() * (settings.getHostPortRangeEnd() -
+					settings.getHostPortRangeStart()) + settings.getHostPortRangeStart());
+		} while (ports.contains(port));
+		Host host = new Host(key, port, TimeUnit.MILLISECONDS.convert(settings.getHostTimeout(),
+				TimeUnit.SECONDS));
+		ports.add(port);
+		hosts.put(key, host);
+		return host;
 	}
 
 	public void removeHost(Host host) {

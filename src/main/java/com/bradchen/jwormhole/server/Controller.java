@@ -16,11 +16,14 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class Controller {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
 	private static final DateFormat FULL_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static final Pattern HOST_KEY_PATTERN = Pattern.compile("^[-_.a-z0-9]+$",
+		Pattern.CASE_INSENSITIVE);
 
 	private final Settings settings;
 	private final HostManager hostManager;
@@ -42,11 +45,11 @@ public class Controller {
 					socket = serverSocket.accept();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(socket
 						.getInputStream()));
-					String response = processCommand(reader.readLine());
+					String response = processCommand(reader.readLine().trim());
 					if (response != null) {
-						PrintWriter writer = new PrintWriter(socket.getOutputStream());
+						PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
 						writer.write(response + "\n");
-						writer.flush();
+						writer.close();
 					}
 				} catch (SocketException exception) {
 					// NOOP
@@ -62,11 +65,6 @@ public class Controller {
 	private String processCommand(String command) {
 		if (StringUtils.isBlank(command)) {
 			return invalidCommandResponse(command);
-		}
-
-		if ("createHost".equals(command)) {
-			Host host = hostManager.createHost();
-			return String.format("%s,%d", getHostDomainName(host), host.getPort());
 		}
 
 		if ("listHosts".equals(command)) {
@@ -87,6 +85,21 @@ public class Controller {
 		}
 
 		String[] tokens = command.split(" ");
+		if ("createHost".equals(tokens[0])) {
+			Host host = null;
+			if (tokens.length == 2) {
+				if (HOST_KEY_PATTERN.matcher(tokens[1]).matches()) {
+					host = hostManager.createHost(tokens[1]);
+				}
+			} else {
+				host = hostManager.createHost();
+			}
+			if (host == null) {
+				return null;
+			}
+			return String.format("%s,%d", getHostDomainName(host), host.getPort());
+		}
+
 		if ("renewHost".equals(tokens[0]) && (tokens.length == 2)) {
 			Host host = hostManager.getHost(tokens[1]);
 			if (host == null) {
