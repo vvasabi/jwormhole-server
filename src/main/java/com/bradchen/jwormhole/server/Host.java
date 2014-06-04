@@ -32,6 +32,10 @@ public final class Host implements Serializable {
 		return createTime;
 	}
 
+	public long getExpiry() {
+		return expiry;
+	}
+
 	public synchronized boolean isExpired() {
 		return System.currentTimeMillis() > expiry;
 	}

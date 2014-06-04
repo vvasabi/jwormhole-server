@@ -77,6 +77,8 @@ public class Controller {
 				sb.append(host.getPort());
 				sb.append(" ");
 				sb.append(FULL_DATE_FORMAT.format(new Date(host.getCreateTime())));
+				sb.append(" ");
+				sb.append(FULL_DATE_FORMAT.format(new Date(host.getExpiry())));
 				sb.append("\n");
 			}
 			sb.append("# hosts: ");
