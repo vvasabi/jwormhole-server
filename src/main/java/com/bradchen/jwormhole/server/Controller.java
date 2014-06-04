@@ -99,7 +99,8 @@ public class Controller {
 			if (host == null) {
 				return null;
 			}
-			return String.format("%s,%d", getHostDomainName(host), host.getPort());
+			return String.format("%s,%s,%d", getHostDomainName(host), host.getKey(),
+				host.getPort());
 		}
 
 		if ("renewHost".equals(tokens[0]) && (tokens.length == 2)) {

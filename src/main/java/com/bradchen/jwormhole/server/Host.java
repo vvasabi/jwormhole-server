@@ -41,11 +41,10 @@ public final class Host implements Serializable {
 	}
 
 	public synchronized boolean renew() {
-		long now = System.currentTimeMillis();
-		if (now > expiry) {
+		if (isExpired()) {
 			return false;
 		}
-		expiry = now + timeout;
+		expiry = System.currentTimeMillis() + timeout;
 		return true;
 	}
 
