@@ -103,13 +103,13 @@ public class Controller {
 				host.getPort());
 		}
 
-		if ("renewHost".equals(tokens[0]) && (tokens.length == 2)) {
+		if ("keepHostAlive".equals(tokens[0]) && (tokens.length == 2)) {
 			Host host = hostManager.getHost(tokens[1]);
 			if (host == null) {
 				return "Invalid host: " + tokens[1];
 			}
 
-			host.renew();
+			host.keepAlive();
 			return null;
 		}
 

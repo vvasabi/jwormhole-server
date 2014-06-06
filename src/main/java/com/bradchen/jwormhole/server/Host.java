@@ -40,7 +40,7 @@ public final class Host implements Serializable {
 		return System.currentTimeMillis() > expiry;
 	}
 
-	public synchronized boolean renew() {
+	public synchronized boolean keepAlive() {
 		if (isExpired()) {
 			return false;
 		}
