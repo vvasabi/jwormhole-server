@@ -29,8 +29,8 @@ public class HostManager {
 		ports = new HashSet<>();
 		hosts = new ConcurrentHashMap<>();
 		scheduler = Executors.newScheduledThreadPool(1);
-		scheduler.scheduleAtFixedRate(this::removeExpiredHosts, settings.getHostManagerGcPeriod(),
-			settings.getHostManagerGcPeriod(), TimeUnit.SECONDS);
+		scheduler.scheduleAtFixedRate(this::removeExpiredHosts, settings.getHostManagerGcInterval(),
+			settings.getHostManagerGcInterval(), TimeUnit.SECONDS);
 	}
 
 	public Map<String, Host> getHosts() {
@@ -50,17 +50,17 @@ public class HostManager {
 		readWriteLock.readLock().lock();
 		try {
 			String portRemoved = domainName.replaceAll(PORT_PATTERN, "");
-			String key = getKeyFromDomainName(portRemoved.toLowerCase());
-			if (key == null) {
+			String name = getNameFromDomainName(portRemoved.toLowerCase());
+			if (name == null) {
 				return null;
 			}
-			return hosts.get(key);
+			return hosts.get(name);
 		} finally {
 			readWriteLock.readLock().unlock();
 		}
 	}
 
-	public String getKeyFromDomainName(String domainName) {
+	public String getNameFromDomainName(String domainName) {
 		int prefixLength = settings.getDomainNamePrefix().length();
 		int suffixLength = settings.getDomainNameSuffix().length();
 		int domainNameLength = domainName.length();
@@ -73,46 +73,46 @@ public class HostManager {
 	public Host createHost() {
 		readWriteLock.writeLock().lock();
 		try {
-			String key;
+			String name;
 			do {
-				key = RandomStringUtils.randomAlphanumeric(settings.getHostKeyLength())
+				name = RandomStringUtils.randomAlphanumeric(settings.getHostNameLength())
 					.toLowerCase();
-			} while (hosts.containsKey(key));
-			return createHostAndAssignPort(key);
+			} while (hosts.containsKey(name));
+			return createHostAndAssignPort(name);
 		} finally {
 			readWriteLock.writeLock().unlock();
 		}
 	}
 
-	public Host createHost(String key) {
+	public Host createHost(String name) {
 		readWriteLock.writeLock().lock();
 		try {
-			if (hosts.containsKey(key)) {
+			if (hosts.containsKey(name)) {
 				return null;
 			}
-			return createHostAndAssignPort(key);
+			return createHostAndAssignPort(name);
 		} finally {
 			readWriteLock.writeLock().unlock();
 		}
 	}
 
-	private Host createHostAndAssignPort(String key) {
+	private Host createHostAndAssignPort(String name) {
 		int port;
 		do {
 			port = (int)(Math.random() * (settings.getHostPortRangeEnd() -
 					settings.getHostPortRangeStart()) + settings.getHostPortRangeStart());
 		} while (ports.contains(port));
-		Host host = new Host(key, port, TimeUnit.MILLISECONDS.convert(settings.getHostTimeout(),
+		Host host = new Host(name, port, TimeUnit.MILLISECONDS.convert(settings.getHostTimeout(),
 				TimeUnit.SECONDS));
 		ports.add(port);
-		hosts.put(key, host);
+		hosts.put(name, host);
 		return host;
 	}
 
 	public void removeHost(Host host) {
 		readWriteLock.writeLock().lock();
 		try {
-			hosts.remove(host.getKey());
+			hosts.remove(host.getName());
 		} finally {
 			readWriteLock.writeLock().unlock();
 		}

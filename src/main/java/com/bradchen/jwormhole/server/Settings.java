@@ -14,9 +14,9 @@ public final class Settings {
 	private final int controllerPort;
 	private final int hostPortRangeStart;
 	private final int hostPortRangeEnd;
-	private final int hostKeyLength;
+	private final int hostNameLength;
 	private final int hostTimeout;
-	private final int hostManagerGcPeriod;
+	private final int hostManagerGcInterval;
 	private final boolean ipForwarded;
 	private final boolean urlFragmentSent;
 
@@ -26,9 +26,9 @@ public final class Settings {
 		controllerPort = getSettingInteger(defaults, overrides, "controllerPort");
 		hostPortRangeStart = getSettingInteger(defaults, overrides, "hostPortRangeStart");
 		hostPortRangeEnd = getSettingInteger(defaults, overrides, "hostPortRangeEnd");
-		hostKeyLength = getSettingInteger(defaults, overrides, "hostKeyLength");
+		hostNameLength = getSettingInteger(defaults, overrides, "hostNameLength");
 		hostTimeout = getSettingInteger(defaults, overrides, "hostTimeout");
-		hostManagerGcPeriod = getSettingInteger(defaults, overrides, "hostManagerGcPeriod");
+		hostManagerGcInterval = getSettingInteger(defaults, overrides, "hostManagerGcInterval");
 		ipForwarded = getSettingBoolean(defaults, overrides, "ipForwarded");
 		urlFragmentSent = getSettingBoolean(defaults, overrides, "urlFragmentSent");
 		validateSettings();
@@ -46,13 +46,13 @@ public final class Settings {
 				(hostPortRangeStart >= hostPortRangeEnd)) {
 			throw new RuntimeException("Invalid host port range.");
 		}
-		if (hostKeyLength <= 0) {
-			throw new RuntimeException("Invalid host key length.");
+		if (hostNameLength <= 0) {
+			throw new RuntimeException("Invalid host name length.");
 		}
 		if (hostTimeout <= 0) {
-			throw new RuntimeException("Invalid host key length.");
+			throw new RuntimeException("Invalid host timeout.");
 		}
-		if ((hostManagerGcPeriod <= 0) || (hostManagerGcPeriod > hostTimeout)) {
+		if ((hostManagerGcInterval <= 0) || (hostManagerGcInterval > hostTimeout)) {
 			throw new RuntimeException("Invalid host manager GC period.");
 		}
 	}
@@ -95,16 +95,16 @@ public final class Settings {
 		return hostPortRangeEnd;
 	}
 
-	public int getHostKeyLength() {
-		return hostKeyLength;
+	public int getHostNameLength() {
+		return hostNameLength;
 	}
 
 	public int getHostTimeout() {
 		return hostTimeout;
 	}
 
-	public int getHostManagerGcPeriod() {
-		return hostManagerGcPeriod;
+	public int getHostManagerGcInterval() {
+		return hostManagerGcInterval;
 	}
 
 	public boolean isIpForwarded() {

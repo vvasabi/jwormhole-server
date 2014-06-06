@@ -6,22 +6,22 @@ public final class Host implements Serializable {
 
 	private static final long serialVersionUID = 3771827707514422212L;
 
-	private final String key;
+	private final String name;
 	private final int port;
 	private final long createTime;
 	private final long timeout;
 	private long expiry;
 
-	public Host(String key, int port, long timeout) {
-		this.key = key;
+	public Host(String name, int port, long timeout) {
+		this.name = name;
 		this.port = port;
 		this.createTime = System.currentTimeMillis();
 		this.timeout = timeout;
 		expiry = createTime + timeout;
 	}
 
-	public String getKey() {
-		return key;
+	public String getName() {
+		return name;
 	}
 
 	public int getPort() {

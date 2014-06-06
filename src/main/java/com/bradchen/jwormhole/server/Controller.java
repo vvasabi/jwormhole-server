@@ -22,7 +22,7 @@ public class Controller {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
 	private static final DateFormat FULL_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	private static final Pattern HOST_KEY_PATTERN = Pattern.compile("^[-_.a-z0-9]+$",
+	private static final Pattern HOST_NAME_PATTERN = Pattern.compile("^[-_.a-z0-9]+$",
 		Pattern.CASE_INSENSITIVE);
 
 	private final Settings settings;
@@ -90,7 +90,7 @@ public class Controller {
 		if ("createHost".equals(tokens[0])) {
 			Host host = null;
 			if (tokens.length == 2) {
-				if (HOST_KEY_PATTERN.matcher(tokens[1]).matches()) {
+				if (HOST_NAME_PATTERN.matcher(tokens[1]).matches()) {
 					host = hostManager.createHost(tokens[1]);
 				}
 			} else {
@@ -99,7 +99,7 @@ public class Controller {
 			if (host == null) {
 				return null;
 			}
-			return String.format("%s,%s,%d", getHostDomainName(host), host.getKey(),
+			return String.format("%s,%s,%d", getHostDomainName(host), host.getName(),
 				host.getPort());
 		}
 
@@ -126,7 +126,7 @@ public class Controller {
 	}
 
 	private String getHostDomainName(Host host) {
-		return String.format("%s%s%s", settings.getDomainNamePrefix(), host.getKey(),
+		return String.format("%s%s%s", settings.getDomainNamePrefix(), host.getName(),
 			settings.getDomainNameSuffix());
 	}
 
