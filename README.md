@@ -3,12 +3,17 @@
 This is a JVM- and SSH-based localhost tunnel tool.
 
 
-## How is this different from any other localhost tunnel?
+## Differences from some other localhost tunnel solutions
 
 * There is no commercial PaaS offering based on this tool, so there is no pay-walled feature.
 * This is JVM-based, so it can be embedded into any other JVM applications. (This is why I created
   jWormhole in the first place.)
+
+
+## Features
+
 * User authentication is done via sshd.
+* Support the ability to specify custom host name.
 
 
 ## Requirements
@@ -20,13 +25,14 @@ This is a JVM- and SSH-based localhost tunnel tool.
 
 ## Installation
 
-* Compile with `mvn package`
-* Create a configuration file (see the next section)
-* Run the .war file with a Servlet container, such as
-  [Jetty Runner](http://wiki.eclipse.org/Jetty/Howto/Using_Jetty_Runner)
-* Set up a wildcard A record for the domain to be used
+* Compile with `mvn package`.
+* Create a configuration file (see the next section).
+* Run the .war file with a servlet container, such as
+  [Jetty Runner](http://wiki.eclipse.org/Jetty/Howto/Using_Jetty_Runner).
+* Set up a wildcard A record for the domain to be used.
+* **Optional**: set up SSL if desired (through reverse proxy or servlet container)
 * For installation of jWormhole client, see
-  [jWormhole Client](https://github.com/vvasabi/jwormhole-client) repo
+  [jWormhole Client](https://github.com/vvasabi/jwormhole-client) repo.
 
 
 ## Configuration
