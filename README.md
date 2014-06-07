@@ -3,7 +3,7 @@
 This is a JVM- and SSH-based localhost tunnel tool.
 
 
-## Differences from some other localhost tunnel solutions
+## Differences from other localhost tunnel solutions
 
 * There is no commercial PaaS offering based on this tool, so there is no pay-walled feature.
 * This is JVM-based, so it can be embedded into any other JVM applications. (This is why I created
