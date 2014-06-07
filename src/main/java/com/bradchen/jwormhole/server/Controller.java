@@ -18,6 +18,9 @@ import java.util.Date;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+/**
+ * Used to control the server via a simple plain text socket protocol.
+ */
 public class Controller {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
@@ -51,8 +54,7 @@ public class Controller {
 						writer.write(response + "\n");
 						writer.close();
 					}
-				} catch (SocketException exception) {
-					// NOOP
+				} catch (SocketException ignored) {
 				} catch (IOException exception) {
 					LOGGER.warn("Error occurred while processing request", exception);
 				} finally {
@@ -138,8 +140,7 @@ public class Controller {
 		try {
 			running = false;
 			serverSocket.close();
-		} catch (IOException exception) {
-			// NOOP
+		} catch (IOException ignored) {
 		}
 	}
 

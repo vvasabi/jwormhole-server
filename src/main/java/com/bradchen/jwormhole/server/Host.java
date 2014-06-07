@@ -2,6 +2,9 @@ package com.bradchen.jwormhole.server;
 
 import java.io.Serializable;
 
+/**
+ * Represents a jWormhole client.
+ */
 public final class Host implements Serializable {
 
 	private static final long serialVersionUID = 3771827707514422212L;

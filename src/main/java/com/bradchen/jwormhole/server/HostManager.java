@@ -13,6 +13,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * Manage jWormhole clients and GC expired ones.
+ */
 public class HostManager {
 
 	private static final String PORT_PATTERN = "(:[\\d]+)?$";

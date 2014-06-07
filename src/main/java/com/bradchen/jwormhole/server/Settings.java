@@ -3,6 +3,9 @@ package com.bradchen.jwormhole.server;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+/**
+ * Stores all settings from properties files.
+ */
 public final class Settings {
 
 	private static final String SETTING_PREFIX = "jwormhole.server.";

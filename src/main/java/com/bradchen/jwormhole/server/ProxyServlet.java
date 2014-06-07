@@ -78,7 +78,8 @@ public final class ProxyServlet extends GenericServlet {
 		HOP_BY_HOP_HEADERS = new HeaderGroup();
 		String[] headers = new String[] {
 			"Connection", "Keep-Alive", "Proxy-Authenticate", "Proxy-Authorization",
-			"TE", "Trailers", "Transfer-Encoding", "Upgrade" };
+			"TE", "Trailers", "Transfer-Encoding", "Upgrade"
+		};
 		for (String header : headers) {
 			HOP_BY_HOP_HEADERS.addHeader(new BasicHeader(header, null));
 		}
@@ -171,9 +172,8 @@ public final class ProxyServlet extends GenericServlet {
 				return;
 			}
 
-			// Pass the response code. This method with the "reason phrase" is deprecated but it's the only way to pass the
-			//  reason along too.
-			//noinspection deprecation
+			// Pass the response code. This method with the "reason phrase" is deprecated but it's
+			// the only way to pass the reason along too.
 			servletResponse.setStatus(statusCode, proxyResponse.getStatusLine().getReasonPhrase());
 			copyResponseHeaders(proxyResponse, servletResponse);
 
@@ -189,9 +189,9 @@ public final class ProxyServlet extends GenericServlet {
 	}
 
 	private boolean doResponseRedirectOrNotModifiedLogic(HttpServletRequest servletRequest,
-														   HttpServletResponse servletResponse,
-														   HttpResponse proxyResponse,
-														   int statusCode, String targetUri)
+														 HttpServletResponse servletResponse,
+														 HttpResponse proxyResponse,
+														 int statusCode, String targetUri)
 			throws ServletException, IOException {
 		// Check if the proxy response is a redirect
 		// The following code is adapted from org.tigris.noodle.filters.CheckForRedirect
@@ -227,8 +227,7 @@ public final class ProxyServlet extends GenericServlet {
 	private void consumeQuietly(HttpEntity entity) {
 		try {
 			EntityUtils.consume(entity);
-		} catch (IOException exception) {
-			// NOOP
+		} catch (IOException ignored) {
 		}
 	}
 

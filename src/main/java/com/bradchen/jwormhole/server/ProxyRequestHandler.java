@@ -22,6 +22,9 @@ import java.util.BitSet;
 import java.util.Enumeration;
 import java.util.Formatter;
 
+/**
+ * Handle proxy request from web client. Code extracted from the original ProxyServlet by MITRE.
+ */
 public class ProxyRequestHandler {
 
 	private static final String X_FORWARDED_FOR_HEADER = "X-Forwarded-For";
@@ -29,9 +32,9 @@ public class ProxyRequestHandler {
 	private static final BitSet ASCII_QUERY_CHARS;
 
 	static {
-		char[] c_unreserved = "_-!.~'()*".toCharArray(); //plus alphanum
+		char[] c_unreserved = "_-!.~'()*".toCharArray(); // plus alphanum
 		char[] c_punct = ",;:$&+=".toCharArray();
-		char[] c_reserved = "?/[]@".toCharArray(); //plus punct
+		char[] c_reserved = "?/[]@".toCharArray(); // plus punct
 
 		ASCII_QUERY_CHARS = new BitSet(128);
 		for(char c = 'a'; c <= 'z'; c++) ASCII_QUERY_CHARS.set((int)c);
@@ -40,8 +43,7 @@ public class ProxyRequestHandler {
 		for(char c : c_unreserved) ASCII_QUERY_CHARS.set((int)c);
 		for(char c : c_punct) ASCII_QUERY_CHARS.set((int)c);
 		for(char c : c_reserved) ASCII_QUERY_CHARS.set((int)c);
-
-		ASCII_QUERY_CHARS.set((int) '%'); //leave existing percent escapes in place
+		ASCII_QUERY_CHARS.set((int) '%'); // leave existing percent escapes in place
 	}
 
 	private final Settings settings;
@@ -63,7 +65,8 @@ public class ProxyRequestHandler {
 		HttpRequest proxyRequest = null;
 		try {
 			// Make the Request
-			//note: we won't transfer the protocol version because I'm not sure it would truly be compatible
+			// note: we won't transfer the protocol version because I'm not sure it would truly be
+			// compatible
 			String targetUriString = getTargetUri(servletRequest);
 			if (targetUriString == null) {
 				return null;
@@ -73,13 +76,17 @@ public class ProxyRequestHandler {
 			String method = servletRequest.getMethod();
 			String proxyRequestUri = rewriteUrlFromRequest(targetUri, servletRequest);
 
-			//spec: RFC 2616, sec 4.3: either of these two headers signal that there is a message body.
+			// spec: RFC 2616, sec 4.3: either of these two headers signal that there is a message
+			// body.
 			if (servletRequest.getHeader(HttpHeaders.CONTENT_LENGTH) != null ||
 					servletRequest.getHeader(HttpHeaders.TRANSFER_ENCODING) != null) {
-				HttpEntityEnclosingRequest eProxyRequest = new BasicHttpEntityEnclosingRequest(method, proxyRequestUri);
+				HttpEntityEnclosingRequest eProxyRequest =
+					new BasicHttpEntityEnclosingRequest(method, proxyRequestUri);
 				// Add the input entity (streamed)
-				//  note: we don't bother ensuring we close the servletInputStream since the container handles it
-				eProxyRequest.setEntity(new InputStreamEntity(servletRequest.getInputStream(), servletRequest.getContentLength()));
+				// note: we don't bother ensuring we close the servletInputStream since the
+				// container handles it
+				eProxyRequest.setEntity(new InputStreamEntity(servletRequest.getInputStream(),
+					servletRequest.getContentLength()));
 				proxyRequest = eProxyRequest;
 			} else {
 				proxyRequest = new BasicHttpRequest(method, proxyRequestUri);
@@ -88,8 +95,7 @@ public class ProxyRequestHandler {
 			copyRequestHeaders(targetUri, servletRequest, proxyRequest);
 			setXForwardedForHeader(servletRequest, proxyRequest);
 			return proxyClient.execute(URIUtils.extractHost(targetUri), proxyRequest);
-		} catch (URISyntaxException exception) {
-			// NOOP
+		} catch (URISyntaxException ignored) {
 			return null;
 		} catch (IOException exception) {
 			if (proxyRequest instanceof AbortableHttpRequest) {
@@ -105,17 +111,20 @@ public class ProxyRequestHandler {
 	}
 
 	/**
-	 * Reads the request URI from {@code servletRequest} and rewrites it. It's used to make the new request.
+	 * Reads the request URI from {@code servletRequest} and rewrites it. It's used to make the new
+	 * request.
 	 */
 	protected String rewriteUrlFromRequest(URI targetUri, HttpServletRequest servletRequest) {
 		StringBuilder uri = new StringBuilder(500);
 		uri.append(targetUri);
 		// Handle the path given to the servlet
-		if (servletRequest.getPathInfo() != null) {//ex: /my/path.html
+		if (servletRequest.getPathInfo() != null) { // ex: /my/path.html
 			uri.append(encodeUriQuery(servletRequest.getPathInfo()));
 		}
+
 		// Handle the query string
-		String queryString = servletRequest.getQueryString();//ex:(following '?'): name=value&foo=bar#fragment
+		// ex:(following '?'): name=value&foo=bar#fragment
+		String queryString = servletRequest.getQueryString();
 		if (queryString != null && queryString.length() > 0) {
 			uri.append('?');
 			int fragIdx = queryString.indexOf('#');
@@ -143,7 +152,9 @@ public class ProxyRequestHandler {
 		proxyRequest.setHeader(X_FORWARDED_FOR_HEADER, newHeader);
 	}
 
-	/** Copy request headers from the servlet client to the proxy request. */
+	/**
+	 * Copy request headers from the servlet client to the proxy request.
+	 */
 	private void copyRequestHeaders(URI targetUri, HttpServletRequest servletRequest,
 									HttpRequest proxyRequest) {
 		// Get an Enumeration of all of the header names sent by the client
@@ -184,7 +195,7 @@ public class ProxyRequestHandler {
 	/**
 	 * Encodes characters in the query or fragment part of the URI.
 	 *
-	 * <p>Unfortunately, an incoming URI sometimes has characters disallowed by the spec.  HttpClient
+	 * <p>Unfortunately, an incoming URI sometimes has characters disallowed by the spec. HttpClient
 	 * insists that the outgoing proxied request has a valid URI because it uses Java's {@link URI}.
 	 * To be more forgiving, we must escape the problematic characters.  See the URI class for the
 	 * spec.
@@ -192,7 +203,8 @@ public class ProxyRequestHandler {
 	 * @param in example: name=value&foo=bar#fragment
 	 */
 	private static CharSequence encodeUriQuery(CharSequence in) {
-		//Note that I can't simply use URI.java to encode because it will escape pre-existing escaped things.
+		// Note that I can't simply use URI.java to encode because it will escape pre-existing
+		// escaped things.
 		StringBuilder outBuf = null;
 		Formatter formatter = null;
 		for(int i = 0; i < in.length(); i++) {
@@ -202,20 +214,20 @@ public class ProxyRequestHandler {
 				if (ASCII_QUERY_CHARS.get((int)c)) {
 					escape = false;
 				}
-			} else if (!Character.isISOControl(c) && !Character.isSpaceChar(c)) {//not-ascii
+			} else if (!Character.isISOControl(c) && !Character.isSpaceChar(c)) { // not-ascii
 				escape = false;
 			}
 			if (!escape) {
 				if (outBuf != null)
 					outBuf.append(c);
 			} else {
-				//escape
+				// escape
 				if (outBuf == null) {
 					outBuf = new StringBuilder(in.length() + 5*3);
 					outBuf.append(in,0,i);
 					formatter = new Formatter(outBuf);
 				}
-				//leading %, 0 padded, width 2, capital hex
+				// leading %, 0 padded, width 2, capital hex
 				formatter.format("%%%02X",(int)c); //TODO
 			}
 		}
