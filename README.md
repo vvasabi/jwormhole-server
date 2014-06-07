@@ -5,7 +5,7 @@ This is a JVM- and SSH-based localhost tunnel tool.
 
 ## Differences from other localhost tunnel solutions
 
-* There is no commercial PaaS offering based on this tool, so there is no pay-walled feature.
+* There is no commercial SaaS offering based on this tool, so there is no pay-walled feature.
 * This is JVM-based, so it can be embedded into any other JVM applications. (This is why I created
   jWormhole in the first place.)
 
