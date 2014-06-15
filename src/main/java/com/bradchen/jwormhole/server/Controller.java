@@ -27,6 +27,7 @@ public class Controller {
 	private static final DateFormat FULL_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private static final Pattern HOST_NAME_PATTERN = Pattern.compile("^[-_.a-z0-9]+$",
 		Pattern.CASE_INSENSITIVE);
+	private static final String OK = "ok";
 
 	private final Settings settings;
 	private final HostManager hostManager;
@@ -99,7 +100,7 @@ public class Controller {
 				host = hostManager.createHost();
 			}
 			if (host == null) {
-				return null;
+				return "error";
 			}
 			return String.format("%s,%s,%d", getHostDomainName(host), host.getName(),
 				host.getPort());
@@ -112,7 +113,7 @@ public class Controller {
 			}
 
 			host.keepAlive();
-			return null;
+			return OK;
 		}
 
 		if ("removeHost".equals(tokens[0]) && (tokens.length == 2)) {
@@ -122,7 +123,7 @@ public class Controller {
 			}
 
 			hostManager.removeHost(host);
-			return null;
+			return OK;
 		}
 		return invalidCommandResponse(command);
 	}
